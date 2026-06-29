@@ -13,14 +13,12 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 
 if CoreGui:FindFirstChild("MM2Hub_GUI") then CoreGui.MM2Hub_GUI:Destroy() end
 
--- ====== UI ======
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MM2Hub_GUI"
 ScreenGui.Parent = CoreGui
@@ -28,35 +26,48 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 280, 0, 390)
-MainFrame.Position = UDim2.new(0.5, -140, 0.5, -195)
+MainFrame.Size = UDim2.new(0, 260, 0, 360)
+MainFrame.Position = UDim2.new(0.5, -130, 0.5, -180)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
 local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1, 0, 0, 44)
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
 TitleBar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 TitleBar.BorderSizePixel = 0
 TitleBar.Parent = MainFrame
-Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 10)
 
 local TitleText = Instance.new("TextLabel")
-TitleText.Size = UDim2.new(1, -40, 1, 0)
-TitleText.Position = UDim2.new(0, 14, 0, 0)
+TitleText.Size = UDim2.new(1, -70, 1, 0)
+TitleText.Position = UDim2.new(0, 12, 0, 0)
 TitleText.BackgroundTransparency = 1
 TitleText.Text = "MM2 Hub"
 TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleText.TextSize = 14
+TitleText.TextSize = 13
 TitleText.Font = Enum.Font.GothamBold
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = TitleBar
 
+-- Minimize button
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
+MinimizeBtn.Position = UDim2.new(1, -52, 0, 10)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+MinimizeBtn.Text = "_"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.TextSize = 14
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.BorderSizePixel = 0
+MinimizeBtn.Parent = TitleBar
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(1, 0)
+
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 22, 0, 22)
-CloseBtn.Position = UDim2.new(1, -28, 0, 11)
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Position = UDim2.new(1, -26, 0, 10)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 CloseBtn.Text = "x"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -68,16 +79,33 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local Page = Instance.new("ScrollingFrame")
-Page.Size = UDim2.new(1, -14, 1, -54)
-Page.Position = UDim2.new(0, 7, 0, 49)
+Page.Size = UDim2.new(1, -12, 1, -48)
+Page.Position = UDim2.new(0, 6, 0, 44)
 Page.BackgroundTransparency = 1
 Page.ScrollBarThickness = 2
 Page.ScrollBarImageColor3 = Color3.fromRGB(120, 80, 255)
 Page.CanvasSize = UDim2.new(0, 0, 0, 0)
 Page.Parent = MainFrame
 local Layout = Instance.new("UIListLayout")
-Layout.Padding = UDim.new(0, 6)
+Layout.Padding = UDim.new(0, 5)
 Layout.Parent = Page
+
+local Minimized = false
+local FullSize = UDim2.new(0, 260, 0, 360)
+local MiniSize = UDim2.new(0, 260, 0, 40)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    Minimized = not Minimized
+    if Minimized then
+        MainFrame.Size = MiniSize
+        Page.Visible = false
+        MinimizeBtn.Text = "+"
+    else
+        MainFrame.Size = FullSize
+        Page.Visible = true
+        MinimizeBtn.Text = "_"
+    end
+end)
 
 local function AddLabel(text, color)
     local lbl = Instance.new("TextLabel")
@@ -94,31 +122,31 @@ end
 
 local function AddToggle(text, default, callback)
     local f = Instance.new("Frame")
-    f.Size = UDim2.new(1, 0, 0, 38)
+    f.Size = UDim2.new(1, 0, 0, 36)
     f.BackgroundColor3 = Color3.fromRGB(28, 28, 33)
     f.BorderSizePixel = 0
     f.Parent = Page
-    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 7)
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(0, 120, 1, 0)
     lbl.Position = UDim2.new(0, 10, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = text
     lbl.TextColor3 = Color3.fromRGB(220, 220, 225)
-    lbl.TextSize = 11
+    lbl.TextSize = 10
     lbl.Font = Enum.Font.Gotham
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = f
     local bg = Instance.new("Frame")
-    bg.Size = UDim2.new(0, 40, 0, 22)
-    bg.Position = UDim2.new(1, -50, 0.5, -11)
+    bg.Size = UDim2.new(0, 38, 0, 20)
+    bg.Position = UDim2.new(1, -48, 0.5, -10)
     bg.BackgroundColor3 = default and Color3.fromRGB(120, 80, 255) or Color3.fromRGB(50, 50, 55)
     bg.BorderSizePixel = 0
     bg.Parent = f
     Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
     local dot = Instance.new("Frame")
-    dot.Size = UDim2.new(0, 16, 0, 16)
-    dot.Position = default and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+    dot.Size = UDim2.new(0, 14, 0, 14)
+    dot.Position = default and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
     dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     dot.BorderSizePixel = 0
     dot.Parent = bg
@@ -127,34 +155,34 @@ local function AddToggle(text, default, callback)
     bg.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
             enabled = not enabled
-            TweenService:Create(dot, TweenInfo.new(0.2), {Position = enabled and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)}):Play()
+            TweenService:Create(dot, TweenInfo.new(0.2), {Position = enabled and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)}):Play()
             TweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = enabled and Color3.fromRGB(120, 80, 255) or Color3.fromRGB(50, 50, 55)}):Play()
             pcall(callback, enabled)
         end
     end)
-    Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 44)
+    Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 41)
 end
 
 local function AddSlider(text, min, max, default, callback)
     local f = Instance.new("Frame")
-    f.Size = UDim2.new(1, 0, 0, 62)
+    f.Size = UDim2.new(1, 0, 0, 58)
     f.BackgroundColor3 = Color3.fromRGB(28, 28, 33)
     f.BorderSizePixel = 0
     f.Parent = Page
-    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 7)
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -20, 0, 14)
-    lbl.Position = UDim2.new(0, 10, 0, 6)
+    lbl.Size = UDim2.new(1, -16, 0, 12)
+    lbl.Position = UDim2.new(0, 8, 0, 5)
     lbl.BackgroundTransparency = 1
     lbl.Text = text .. ": " .. tostring(default)
     lbl.TextColor3 = Color3.fromRGB(200, 200, 205)
-    lbl.TextSize = 10
+    lbl.TextSize = 9
     lbl.Font = Enum.Font.Gotham
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = f
     local bar = Instance.new("TextButton")
-    bar.Size = UDim2.new(1, -20, 0, 30)
-    bar.Position = UDim2.new(0, 10, 0, 24)
+    bar.Size = UDim2.new(1, -16, 0, 26)
+    bar.Position = UDim2.new(0, 8, 0, 22)
     bar.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
     bar.BorderSizePixel = 0
     bar.Text = ""
@@ -168,8 +196,8 @@ local function AddSlider(text, min, max, default, callback)
     fill.Parent = bar
     Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 6)
     local dot = Instance.new("Frame")
-    dot.Size = UDim2.new(0, 16, 0, 16)
-    dot.Position = UDim2.new((default - min) / (max - min), -8, 0.5, -8)
+    dot.Size = UDim2.new(0, 14, 0, 14)
+    dot.Position = UDim2.new((default - min) / (max - min), -7, 0.5, -7)
     dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     dot.BorderSizePixel = 0
     dot.Parent = bar
@@ -177,7 +205,7 @@ local function AddSlider(text, min, max, default, callback)
     local function update(val)
         local pct = (val - min) / (max - min)
         fill.Size = UDim2.new(pct, 0, 1, 0)
-        dot.Position = UDim2.new(pct, -8, 0.5, -8)
+        dot.Position = UDim2.new(pct, -7, 0.5, -7)
         lbl.Text = text .. ": " .. tostring(val)
         pcall(callback, val)
     end
@@ -201,22 +229,22 @@ local function AddSlider(text, min, max, default, callback)
             update(math.floor(min + (max - min) * pct))
         end)
     end)
-    Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 68)
+    Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 63)
 end
 
 local function AddButton(text, color, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 34)
+    btn.Size = UDim2.new(1, 0, 0, 32)
     btn.BackgroundColor3 = color or Color3.fromRGB(120, 80, 255)
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 11
+    btn.TextSize = 10
     btn.Font = Enum.Font.GothamBold
     btn.BorderSizePixel = 0
     btn.Parent = Page
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 7)
     btn.MouseButton1Click:Connect(callback)
-    Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 40)
+    Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 37)
 end
 
 AddLabel("FARM", Color3.fromRGB(120, 80, 255))
@@ -305,20 +333,21 @@ Players.PlayerAdded:Connect(function(plr)
     plr.CharacterRemoving:Connect(function() if PlayerHighlights[plr] then PlayerHighlights[plr].Adornee = nil end end)
 end)
 
--- Получение контейнера монет (ждёт загрузки карты)
-local function GetCoinContainer()
-    for _, obj in ipairs(Workspace:GetChildren()) do
-        if obj:IsA("Model") then
-            local container = obj:FindFirstChild("CoinContainer")
-            if container then return container end
+local function WaitForCoinContainer()
+    local start = tick()
+    while tick() - start < 30 do
+        for _, obj in ipairs(Workspace:GetChildren()) do
+            if obj:IsA("Model") and obj:FindFirstChild("CoinContainer") then
+                return obj.CoinContainer
+            end
         end
+        task.wait(0.5)
     end
     return nil
 end
 
 local function GetCoinPart(coinServer)
     if not coinServer then return nil end
-    -- Ищем MainCoin или Coin внутри CoinVisual или напрямую
     for _, child in ipairs(coinServer:GetDescendants()) do
         if (child.Name == "MainCoin" or child.Name == "Coin") and child:IsA("BasePart") and child:FindFirstChild("TouchInterest") then
             return child
@@ -329,15 +358,13 @@ end
 
 local function FindNearestCoin()
     local char = LocalPlayer.Character
-    if not char then return end
+    if not char then return nil, nil end
     local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+    if not hrp then return nil, nil end
+    local container = WaitForCoinContainer()
+    if not container then return nil, nil end
     local curPos = hrp.Position
     local nearestPart, nearestDist = nil, math.huge
-
-    local container = GetCoinContainer()
-    if not container then return nil, nil end
-
     for _, coinServer in ipairs(container:GetChildren()) do
         if coinServer.Name == "Coin_Server" and coinServer:IsA("Model") then
             local part = GetCoinPart(coinServer)
