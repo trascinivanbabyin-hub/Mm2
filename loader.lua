@@ -32,17 +32,6 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
-
-local OuterGlow = Instance.new("Frame")
-OuterGlow.Size = UDim2.new(1, 4, 1, 4)
-OuterGlow.Position = UDim2.new(0, -2, 0, -2)
-OuterGlow.BackgroundColor3 = Color3.fromRGB(120, 80, 255)
-OuterGlow.BackgroundTransparency = 0.7
-OuterGlow.BorderSizePixel = 0
-OuterGlow.Parent = MainFrame
-OuterGlow.ZIndex = -1
-Instance.new("UICorner", OuterGlow).CornerRadius = UDim.new(0, 14)
-
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
 local TitleBar = Instance.new("Frame")
@@ -67,20 +56,13 @@ local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 22, 0, 22)
 CloseBtn.Position = UDim2.new(1, -28, 0, 11)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-CloseBtn.Text = ""
+CloseBtn.Text = "x"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 12
+CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.BorderSizePixel = 0
 CloseBtn.Parent = TitleBar
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
-
-local CloseCross = Instance.new("TextLabel")
-CloseCross.Size = UDim2.new(1, 0, 1, 0)
-CloseCross.BackgroundTransparency = 1
-CloseCross.Text = "x"
-CloseCross.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseCross.TextSize = 13
-CloseCross.Font = Enum.Font.GothamBold
-CloseCross.Parent = CloseBtn
-
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local Page = Instance.new("ScrollingFrame")
@@ -115,7 +97,6 @@ local function AddToggle(text, default, callback)
     f.BorderSizePixel = 0
     f.Parent = Page
     Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
-
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(0, 120, 1, 0)
     lbl.Position = UDim2.new(0, 10, 0, 0)
@@ -126,7 +107,6 @@ local function AddToggle(text, default, callback)
     lbl.Font = Enum.Font.Gotham
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = f
-
     local bg = Instance.new("Frame")
     bg.Size = UDim2.new(0, 40, 0, 22)
     bg.Position = UDim2.new(1, -50, 0.5, -11)
@@ -134,7 +114,6 @@ local function AddToggle(text, default, callback)
     bg.BorderSizePixel = 0
     bg.Parent = f
     Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
-
     local dot = Instance.new("Frame")
     dot.Size = UDim2.new(0, 16, 0, 16)
     dot.Position = default and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
@@ -142,10 +121,9 @@ local function AddToggle(text, default, callback)
     dot.BorderSizePixel = 0
     dot.Parent = bg
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-
     local enabled = default
     bg.InputBegan:Connect(function(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
             enabled = not enabled
             TweenService:Create(dot, TweenInfo.new(0.2), {Position = enabled and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)}):Play()
             TweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = enabled and Color3.fromRGB(120, 80, 255) or Color3.fromRGB(50, 50, 55)}):Play()
@@ -162,7 +140,6 @@ local function AddSlider(text, min, max, default, callback)
     f.BorderSizePixel = 0
     f.Parent = Page
     Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
-
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -20, 0, 14)
     lbl.Position = UDim2.new(0, 10, 0, 6)
@@ -173,47 +150,54 @@ local function AddSlider(text, min, max, default, callback)
     lbl.Font = Enum.Font.Gotham
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = f
-
-    local bar = Instance.new("Frame")
-    bar.Size = UDim2.new(1, -20, 0, 5)
-    bar.Position = UDim2.new(0, 10, 0, 38)
+    local bar = Instance.new("TextButton")
+    bar.Size = UDim2.new(1, -20, 0, 30)
+    bar.Position = UDim2.new(0, 10, 0, 24)
     bar.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
     bar.BorderSizePixel = 0
+    bar.Text = ""
+    bar.AutoButtonColor = false
     bar.Parent = f
-    Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
-
+    Instance.new("UICorner", bar).CornerRadius = UDim.new(0, 6)
     local fill = Instance.new("Frame")
     fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
     fill.BackgroundColor3 = Color3.fromRGB(120, 80, 255)
     fill.BorderSizePixel = 0
     fill.Parent = bar
-    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 6)
     local dot = Instance.new("Frame")
-    dot.Size = UDim2.new(0, 12, 0, 12)
-    dot.Position = UDim2.new((default - min) / (max - min), -6, 0.5, -6)
+    dot.Size = UDim2.new(0, 16, 0, 16)
+    dot.Position = UDim2.new((default - min) / (max - min), -8, 0.5, -8)
     dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     dot.BorderSizePixel = 0
     dot.Parent = bar
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-
-    local dragging = false
-    local function update(inp)
-        local pct = math.clamp((inp.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
-        local v = math.floor(min + (max - min) * pct)
+    local function update(val)
+        local pct = (val - min) / (max - min)
         fill.Size = UDim2.new(pct, 0, 1, 0)
-        dot.Position = UDim2.new(pct, -6, 0.5, -6)
-        lbl.Text = text .. ": " .. tostring(v)
-        pcall(callback, v)
+        dot.Position = UDim2.new(pct, -8, 0.5, -8)
+        lbl.Text = text .. ": " .. tostring(val)
+        pcall(callback, val)
     end
     bar.InputBegan:Connect(function(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; update(inp) end
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+            local pct = math.clamp((inp.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+            update(math.floor(min + (max - min) * pct))
+        end
     end)
-    UserInputService.InputChanged:Connect(function(inp)
-        if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then update(inp) end
-    end)
-    UserInputService.InputEnded:Connect(function(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+    bar.MouseButton1Down:Connect(function()
+        local connection
+        connection = RunService.RenderStepped:Connect(function()
+            if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.Touch) then
+                connection:Disconnect()
+                return
+            end
+            local mousePos = UserInputService:GetMouseLocation()
+            local barPos = bar.AbsolutePosition
+            local barSize = bar.AbsoluteSize
+            local pct = math.clamp((mousePos.X - barPos.X) / barSize.X, 0, 1)
+            update(math.floor(min + (max - min) * pct))
+        end)
     end)
     Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 68)
 end
@@ -233,18 +217,14 @@ local function AddButton(text, color, callback)
     Page.CanvasSize = UDim2.new(0, 0, 0, Page.CanvasSize.Y.Offset + 40)
 end
 
--- === МЕНЮ ===
 AddLabel("FARM", Color3.fromRGB(120, 80, 255))
 AddToggle("Auto Farm", false, function(v) Config.AutofarmEnabled = v end)
 AddToggle("Auto Grab Gun", false, function(v) Config.AutoGrabGun = v end)
-
 AddLabel("MOVEMENT", Color3.fromRGB(80, 180, 255))
 AddToggle("Noclip", false, function(v) Config.Noclip = v end)
 AddSlider("Speed", 10, 40, 22, function(v) Config.MovementSpeed = v end)
-
 AddLabel("VISUALS", Color3.fromRGB(255, 120, 80))
 AddToggle("ESP", true, function(v) Config.ESPEnabled = v end)
-
 AddButton("Stop All", Color3.fromRGB(255, 60, 60), function()
     Config.AutofarmEnabled = false
     Config.AutoGrabGun = false
@@ -252,21 +232,20 @@ AddButton("Stop All", Color3.fromRGB(255, 60, 60), function()
     Config.Noclip = false
 end)
 
--- Dragging
 local dragging, dragStart, frameStart = false, nil, nil
 TitleBar.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
         dragging = true; dragStart = inp.Position; frameStart = MainFrame.Position
     end
 end)
 UserInputService.InputChanged:Connect(function(inp)
-    if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
+    if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
         local delta = inp.Position - dragStart
         MainFrame.Position = UDim2.new(frameStart.X.Scale, frameStart.X.Offset + delta.X, frameStart.Y.Scale, frameStart.Y.Offset + delta.Y)
     end
 end)
 UserInputService.InputEnded:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then dragging = false end
 end)
 
 -- ==================== CORE ====================
@@ -278,18 +257,16 @@ local function GetRole(plr)
     local char = plr.Character
     if not char then return "Innocent" end
     local bp = plr:FindFirstChild("Backpack")
-    local function scan(container)
-        if not container then return nil end
+    local function hasTool(container, toolName)
+        if not container then return false end
         for _, child in ipairs(container:GetChildren()) do
-            if child:IsA("Tool") then
-                local name = child.Name:lower()
-                if name:find("knife") then return "Murderer" end
-                if name:find("gun") then return "Sheriff" end
-            end
+            if child:IsA("Tool") and child.Name == toolName then return true end
         end
-        return nil
+        return false
     end
-    return scan(char) or scan(bp) or "Innocent"
+    if hasTool(char, "Knife") or hasTool(bp, "Knife") then return "Murderer" end
+    if hasTool(char, "Gun") or hasTool(bp, "Gun") then return "Sheriff" end
+    return "Innocent"
 end
 
 local function ApplyESP(plr)
@@ -326,26 +303,38 @@ Players.PlayerAdded:Connect(function(plr)
     plr.CharacterRemoving:Connect(function() if PlayerHighlights[plr] then PlayerHighlights[plr].Adornee = nil end end)
 end)
 
+local function GetCoinPart(coinServer)
+    for _, child in ipairs(coinServer:GetDescendants()) do
+        if (child.Name == "MainCoin" or child.Name == "Coin") and child:IsA("BasePart") and child:FindFirstChild("TouchInterest") then
+            return child
+        end
+    end
+    return nil
+end
+
 local function FindNearestCoin()
     local char = LocalPlayer.Character
     if not char then return end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     local curPos = hrp.Position
-    local nearest, nearestDist = nil, math.huge
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.Name == "Coin" then
-            local parent = obj.Parent
-            if parent and (parent.Name:find("Coin") or parent.Name:find("CoinContainer")) and obj:FindFirstChild("TouchInterest") and not CoinBlacklist[obj] then
-                local dist = (obj.Position - curPos).Magnitude
-                if dist < nearestDist then
-                    nearestDist = dist
-                    nearest = obj
+    local nearestPart, nearestDist = nil, math.huge
+    for _, coinServer in ipairs(Workspace:GetDescendants()) do
+        if coinServer.Name == "Coin_Server" and coinServer:IsA("Model") then
+            local parent = coinServer.Parent
+            if parent and parent.Name == "CoinContainer" then
+                local part = GetCoinPart(coinServer)
+                if part and not CoinBlacklist[coinServer] then
+                    local dist = (part.Position - curPos).Magnitude
+                    if dist < nearestDist then
+                        nearestDist = dist
+                        nearestPart = part
+                    end
                 end
             end
         end
     end
-    return nearest, nearestDist
+    return nearestPart, nearestDist
 end
 
 local function TweenTo(target, speed)
@@ -369,30 +358,20 @@ end
 task.spawn(function()
     while IsScriptActive do
         if Config.AutofarmEnabled then
-            local coin, dist = FindNearestCoin()
-            if coin then
-                if dist > 3 then
-                    TweenTo(coin.Position, Config.MovementSpeed)
-                    if coin and coin.Parent then
-                        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                        if hrp and (coin.Position - hrp.Position).Magnitude < 5 then
-                            pcall(function()
-                                firetouchinterest(hrp, coin, 0)
-                                firetouchinterest(hrp, coin, 1)
-                            end)
-                        else
-                            CoinBlacklist[coin] = true
-                            task.delay(5, function() CoinBlacklist[coin] = nil end)
-                        end
-                    end
+            local coinPart, dist = FindNearestCoin()
+            if coinPart then
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then task.wait(0.5); continue end
+                if dist > 3 then TweenTo(coinPart.Position, Config.MovementSpeed) end
+                if (coinPart.Position - hrp.Position).Magnitude < 5 then
+                    pcall(function()
+                        firetouchinterest(hrp, coinPart, 0)
+                        firetouchinterest(hrp, coinPart, 1)
+                    end)
+                    task.wait(0.4)
                 else
-                    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp then
-                        pcall(function()
-                            firetouchinterest(hrp, coin, 0)
-                            firetouchinterest(hrp, coin, 1)
-                        end)
-                    end
+                    CoinBlacklist[coinPart.Parent] = true
+                    task.delay(5, function() if coinPart.Parent then CoinBlacklist[coinPart.Parent] = nil end end)
                 end
             else
                 task.wait(1)
@@ -405,25 +384,34 @@ end)
 task.spawn(function()
     while IsScriptActive do
         if Config.AutoGrabGun then
-            local gun = Workspace:FindFirstChild("GunDrop") or Workspace:FindFirstChild("DroppedGun")
-            if gun then
-                local wasFarming = Config.AutofarmEnabled
-                Config.AutofarmEnabled = false
-                local char = LocalPlayer.Character
-                if char then
-                    local hrp = char:FindFirstChild("HumanoidRootPart")
-                    if hrp then
-                        local safePos = hrp.Position
-                        TweenTo(gun.Position, Config.MovementSpeed)
-                        pcall(function()
-                            firetouchinterest(hrp, gun, 0)
-                            firetouchinterest(hrp, gun, 1)
-                        end)
-                        task.wait(1)
-                        TweenTo(safePos, Config.MovementSpeed)
+            local gunDrop = Workspace:FindFirstChild("GunDrop")
+            if gunDrop and gunDrop:IsA("Model") then
+                local gunPart = nil
+                for _, child in ipairs(gunDrop:GetDescendants()) do
+                    if (child.Name == "Handle" or child.Name == "Gun") and child:IsA("BasePart") and child:FindFirstChild("TouchInterest") then
+                        gunPart = child
+                        break
                     end
                 end
-                if wasFarming then Config.AutofarmEnabled = true end
+                if gunPart then
+                    local wasFarming = Config.AutofarmEnabled
+                    Config.AutofarmEnabled = false
+                    local char = LocalPlayer.Character
+                    if char then
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local safePos = hrp.Position
+                            TweenTo(gunPart.Position, Config.MovementSpeed)
+                            pcall(function()
+                                firetouchinterest(hrp, gunPart, 0)
+                                firetouchinterest(hrp, gunPart, 1)
+                            end)
+                            task.wait(0.5)
+                            TweenTo(safePos, Config.MovementSpeed)
+                        end
+                    end
+                    if wasFarming then Config.AutofarmEnabled = true end
+                end
             end
         end
         task.wait(3)
