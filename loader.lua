@@ -131,7 +131,6 @@ local function AddToggle(name, default, callback)
     box.BorderSizePixel = 0
     box.Parent = Content
     Instance.new("UICorner", box).CornerRadius = UDim.new(0, 10)
-
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0, 140, 1, 0)
     label.Position = UDim2.new(0, 14, 0, 0)
@@ -142,7 +141,6 @@ local function AddToggle(name, default, callback)
     label.Font = Enum.Font.SourceSans
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = box
-
     local toggle = Instance.new("Frame")
     toggle.Size = UDim2.new(0, 42, 0, 26)
     toggle.Position = UDim2.new(1, -56, 0.5, -13)
@@ -150,7 +148,6 @@ local function AddToggle(name, default, callback)
     toggle.BorderSizePixel = 0
     toggle.Parent = box
     Instance.new("UICorner", toggle).CornerRadius = UDim.new(1, 0)
-
     local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 22, 0, 22)
     knob.Position = default and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
@@ -158,7 +155,6 @@ local function AddToggle(name, default, callback)
     knob.BorderSizePixel = 0
     knob.Parent = toggle
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
     local enabled = default
     local function updateVisual()
         TweenService:Create(knob, TweenInfo.new(0.2), {Position = enabled and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)}):Play()
@@ -312,72 +308,122 @@ task.spawn(function()
     end
 end)
 
-local function WaitForCoinContainer()
-    local start = tick()
-    while tick() - start < 30 do
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "CoinContainer" then
-                return obj
-            end
+local Blacklist = {}
+local MaxRetries = 3
+
+local function getCoinPart(coinServer)
+    for _, obj in ipairs(coinServer:GetDescendants()) do
+        if (obj.Name == "MainCoin" or obj.Name == "Coin") and obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") then
+            return obj
         end
-        task.wait(0.5)
     end
     return nil
+end
+
+local function scanCoins()
+    local coins = {}
+    local container = nil
+    for _ = 1, 20 do
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if obj.Name == "CoinContainer" then
+                container = obj
+                break
+            end
+        end
+        if container then break end
+        task.wait(0.5)
+    end
+    if not container then return coins end
+
+    for _, coinServer in ipairs(container:GetChildren()) do
+        if coinServer.Name == "Coin_Server" and coinServer:IsA("Model") then
+            if not Blacklist[coinServer] then
+                local part = getCoinPart(coinServer)
+                if part and part.Position.Y >= 0.5 then
+                    table.insert(coins, {Server = coinServer, Part = part})
+                end
+            end
+        end
+    end
+
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local myPos = hrp.Position
+        table.sort(coins, function(a, b)
+            return (a.Part.Position - myPos).Magnitude < (b.Part.Position - myPos).Magnitude
+        end)
+    end
+    return coins
 end
 
 task.spawn(function()
     while IsScriptActive do
         if Config.WalkWander then
             local char = LocalPlayer.Character
-            if char then
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local container = WaitForCoinContainer()
-                    if container then
-                        local nearestPart = nil
-                        local nearestDist = math.huge
-                        for _, coinServer in ipairs(container:GetChildren()) do
-                            if coinServer.Name == "Coin_Server" then
-                                for _, child in ipairs(coinServer:GetDescendants()) do
-                                    if (child.Name == "MainCoin" or child.Name == "Coin") and child:IsA("BasePart") and child:FindFirstChild("TouchInterest") then
-                                        local dist = (child.Position - hrp.Position).Magnitude
-                                        if dist < nearestDist then
-                                            nearestDist = dist
-                                            nearestPart = child
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                        if nearestPart then
-                            local tween = TweenService:Create(hrp, TweenInfo.new(nearestDist / Config.MovementSpeed), {CFrame = CFrame.new(nearestPart.Position)})
-                            tween:Play()
-                            tween.Completed:Wait()
-                            pcall(function()
-                                firetouchinterest(hrp, nearestPart, 0)
-                                firetouchinterest(hrp, nearestPart, 1)
-                            end)
-                            task.wait(0.3)
-                        else
-                            local angle = math.random() * 2 * math.pi
-                            local radius = 50
-                            local targetPos = hrp.Position + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
-                            local tween = TweenService:Create(hrp, TweenInfo.new(2), {CFrame = CFrame.new(targetPos)})
-                            tween:Play()
-                            tween.Completed:Wait()
-                        end
-                    else
-                        local angle = math.random() * 2 * math.pi
-                        local radius = 50
-                        local targetPos = hrp.Position + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
-                        local tween = TweenService:Create(hrp, TweenInfo.new(2), {CFrame = CFrame.new(targetPos)})
-                        tween:Play()
-                        tween.Completed:Wait()
-                    end
+            if not char then task.wait(0.5); continue end
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if not hrp then task.wait(0.5); continue end
+
+            local coins = scanCoins()
+            if #coins == 0 then
+                task.wait(2)
+                continue
+            end
+
+            local target = coins[1]
+            local coinPart = target.Part
+            local coinServer = target.Server
+            local myPos = hrp.Position
+
+            local targetPos = coinPart.Position
+            local safeY = math.max(targetPos.Y, 3)
+            if math.abs(targetPos.Y - myPos.Y) > 10 then
+                safeY = myPos.Y
+            end
+            local destination = Vector3.new(targetPos.X, safeY, targetPos.Z)
+
+            local distToTarget = (destination - myPos).Magnitude
+            if distToTarget > 3 then
+                local speed = Config.MovementSpeed
+                local duration = distToTarget / speed
+                local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(destination)})
+                tween:Play()
+                tween.Completed:Wait()
+            end
+
+            local finalDist = (coinPart.Position - hrp.Position).Magnitude
+            if finalDist > 2 and finalDist < 20 then
+                hrp.CFrame = CFrame.new(coinPart.Position - (coinPart.Position - hrp.Position).Unit * 1.5)
+            end
+
+            local collected = false
+            for attempt = 1, MaxRetries do
+                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then
+                    break
+                end
+                pcall(function()
+                    firetouchinterest(hrp, coinPart, 0)
+                    firetouchinterest(hrp, coinPart, 1)
+                end)
+                task.wait(0.3)
+                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then
+                    collected = true
+                    break
                 end
             end
+
+            if not collected then
+                Blacklist[coinServer] = true
+                task.delay(10, function()
+                    Blacklist[coinServer] = nil
+                end)
+            end
+
+            task.wait(0.2)
+        else
+            task.wait(0.5)
         end
-        task.wait(0.5)
     end
 end)
 
