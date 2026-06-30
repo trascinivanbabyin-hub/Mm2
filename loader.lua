@@ -29,8 +29,7 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 260, 0, 300)
 MainFrame.Position = UDim2.new(0.5, -130, 0.5, -150)
-MainFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
-MainFrame.BackgroundTransparency = 0.05
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
@@ -38,7 +37,7 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
 
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 44)
-Header.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+Header.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
 Header.BorderSizePixel = 0
 Header.Parent = MainFrame
 Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 14)
@@ -48,7 +47,7 @@ HeaderTitle.Size = UDim2.new(1, -80, 1, 0)
 HeaderTitle.Position = UDim2.new(0, 16, 0, 0)
 HeaderTitle.BackgroundTransparency = 1
 HeaderTitle.Text = "MM2"
-HeaderTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+HeaderTitle.TextColor3 = Color3.fromRGB(0, 0, 0)
 HeaderTitle.TextSize = 17
 HeaderTitle.Font = Enum.Font.SourceSansSemibold
 HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -57,9 +56,9 @@ HeaderTitle.Parent = Header
 local MinimizeBtn = Instance.new("TextButton")
 MinimizeBtn.Size = UDim2.new(0, 24, 0, 24)
 MinimizeBtn.Position = UDim2.new(1, -56, 0, 10)
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(58, 58, 60)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 MinimizeBtn.Text = "—"
-MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 MinimizeBtn.TextSize = 14
 MinimizeBtn.Font = Enum.Font.SourceSansSemibold
 MinimizeBtn.BorderSizePixel = 0
@@ -69,9 +68,9 @@ Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(1, 0)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 24, 0, 24)
 CloseBtn.Position = UDim2.new(1, -28, 0, 10)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 69, 58)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 CloseBtn.Text = "✕"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 CloseBtn.TextSize = 12
 CloseBtn.Font = Enum.Font.SourceSansSemibold
 CloseBtn.BorderSizePixel = 0
@@ -84,7 +83,7 @@ Content.Size = UDim2.new(1, -16, 1, -52)
 Content.Position = UDim2.new(0, 8, 0, 48)
 Content.BackgroundTransparency = 1
 Content.ScrollBarThickness = 2
-Content.ScrollBarImageColor3 = Color3.fromRGB(100, 210, 255)
+Content.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 0)
 Content.CanvasSize = UDim2.new(0, 0, 0, 0)
 Content.Parent = MainFrame
 local ListLayout = Instance.new("UIListLayout")
@@ -116,7 +115,7 @@ local function AddSection(title)
     lbl.Size = UDim2.new(1, 0, 1, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = title:upper()
-    lbl.TextColor3 = Color3.fromRGB(150, 150, 155)
+    lbl.TextColor3 = Color3.fromRGB(0, 200, 0)
     lbl.TextSize = 10
     lbl.Font = Enum.Font.SourceSansSemibold
     lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -127,7 +126,7 @@ end
 local function AddToggle(name, default, callback)
     local box = Instance.new("Frame")
     box.Size = UDim2.new(1, 0, 0, 38)
-    box.BackgroundColor3 = Color3.fromRGB(44, 44, 47)
+    box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     box.BorderSizePixel = 0
     box.Parent = Content
     Instance.new("UICorner", box).CornerRadius = UDim.new(0, 10)
@@ -144,21 +143,21 @@ local function AddToggle(name, default, callback)
     local toggle = Instance.new("Frame")
     toggle.Size = UDim2.new(0, 42, 0, 26)
     toggle.Position = UDim2.new(1, -56, 0.5, -13)
-    toggle.BackgroundColor3 = default and Color3.fromRGB(0, 122, 255) or Color3.fromRGB(72, 72, 75)
+    toggle.BackgroundColor3 = default and Color3.fromRGB(0, 220, 0) or Color3.fromRGB(60, 60, 60)
     toggle.BorderSizePixel = 0
     toggle.Parent = box
     Instance.new("UICorner", toggle).CornerRadius = UDim.new(1, 0)
     local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 22, 0, 22)
     knob.Position = default and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
-    knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    knob.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     knob.BorderSizePixel = 0
     knob.Parent = toggle
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
     local enabled = default
     local function updateVisual()
         TweenService:Create(knob, TweenInfo.new(0.2), {Position = enabled and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)}):Play()
-        toggle.BackgroundColor3 = enabled and Color3.fromRGB(0, 122, 255) or Color3.fromRGB(72, 72, 75)
+        toggle.BackgroundColor3 = enabled and Color3.fromRGB(0, 220, 0) or Color3.fromRGB(60, 60, 60)
     end
     toggle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -173,9 +172,9 @@ end
 local function AddButton(name, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 36)
-    btn.BackgroundColor3 = Color3.fromRGB(0, 122, 255)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
     btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextColor3 = Color3.fromRGB(0, 0, 0)
     btn.TextSize = 13
     btn.Font = Enum.Font.SourceSansSemibold
     btn.BorderSizePixel = 0
@@ -292,41 +291,35 @@ end)
 local Blacklist = {}
 local MaxRetries = 3
 
-local function getCoinPart(coinServer)
-    for _, obj in ipairs(coinServer:GetDescendants()) do
-        if obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") then return obj end
-    end
-    return nil
-end
+local function findAllCollectibles()
+    local items = {}
+    local myChar = LocalPlayer.Character
+    if not myChar then return items end
+    local hrp = myChar:FindFirstChild("HumanoidRootPart")
+    if not hrp then return items end
 
-local function scanCoins()
-    local coins = {}
-    local container = nil
-    for _ = 1, 20 do
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "CoinContainer" then container = obj break end
-        end
-        if container then break end
-        task.wait(0.5)
-    end
-    if not container then return coins end
-
-    for _, coinServer in ipairs(container:GetChildren()) do
-        if coinServer.Name == "Coin_Server" and coinServer:IsA("Model") and not Blacklist[coinServer] then
-            local part = getCoinPart(coinServer)
-            if part and part.Position.Y >= 0.5 then
-                table.insert(coins, {Server = coinServer, Part = part})
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") then
+            local isPlayerPart = false
+            local current = obj
+            while current do
+                if current:IsA("Model") and Players:GetPlayerFromCharacter(current) then
+                    isPlayerPart = true
+                    break
+                end
+                current = current.Parent
+            end
+            if not isPlayerPart and not Blacklist[obj] then
+                table.insert(items, obj)
             end
         end
     end
 
-    local char = LocalPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        local myPos = hrp.Position
-        table.sort(coins, function(a, b) return (a.Part.Position - myPos).Magnitude < (b.Part.Position - myPos).Magnitude end)
-    end
-    return coins
+    table.sort(items, function(a, b)
+        return (a.Position - hrp.Position).Magnitude < (b.Position - hrp.Position).Magnitude
+    end)
+
+    return items
 end
 
 task.spawn(function()
@@ -337,15 +330,12 @@ task.spawn(function()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then task.wait(0.5); continue end
 
-            local coins = scanCoins()
-            if #coins == 0 then task.wait(2); continue end
+            local items = findAllCollectibles()
+            if #items == 0 then task.wait(2); continue end
 
-            local target = coins[1]
-            local coinPart = target.Part
-            local coinServer = target.Server
+            local target = items[1]
+            local targetPos = target.Position
             local myPos = hrp.Position
-
-            local targetPos = coinPart.Position
             local safeY = math.max(targetPos.Y, 3)
             if math.abs(targetPos.Y - myPos.Y) > 10 then safeY = myPos.Y end
             local destination = Vector3.new(targetPos.X, safeY, targetPos.Z)
@@ -359,25 +349,28 @@ task.spawn(function()
                 tween.Completed:Wait()
             end
 
-            local finalDist = (coinPart.Position - hrp.Position).Magnitude
+            local finalDist = (targetPos - hrp.Position).Magnitude
             if finalDist > 2 and finalDist < 20 then
-                hrp.CFrame = CFrame.new(coinPart.Position - (coinPart.Position - hrp.Position).Unit * 1.5)
+                hrp.CFrame = CFrame.new(targetPos - (targetPos - hrp.Position).Unit * 1.5)
             end
 
             local collected = false
             for attempt = 1, MaxRetries do
-                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then break end
+                if not target.Parent or not target:FindFirstChild("TouchInterest") then break end
                 pcall(function()
-                    firetouchinterest(hrp, coinPart, 0)
-                    firetouchinterest(hrp, coinPart, 1)
+                    firetouchinterest(hrp, target, 0)
+                    firetouchinterest(hrp, target, 1)
                 end)
                 task.wait(0.3)
-                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then collected = true; break end
+                if not target.Parent or not target:FindFirstChild("TouchInterest") then
+                    collected = true
+                    break
+                end
             end
 
             if not collected then
-                Blacklist[coinServer] = true
-                task.delay(10, function() Blacklist[coinServer] = nil end)
+                Blacklist[target] = true
+                task.delay(10, function() Blacklist[target] = nil end)
             end
 
             task.wait(0.2)
