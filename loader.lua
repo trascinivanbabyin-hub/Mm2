@@ -312,6 +312,13 @@ local function isCoin(obj)
     return false
 end
 
+local function isInRound()
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj.Name == "Coin_Server" then return true end
+    end
+    return false
+end
+
 local function findAllCoins()
     local coins = {}
     local myChar = LocalPlayer.Character
@@ -341,24 +348,21 @@ task.spawn(function()
                 continue
             end
 
+            if not isInRound() then
+                CollectedCount = 0
+                CoinCounterLabel.Text = "Coins: 0/40 (waiting)"
+                Blacklist = {}
+                task.wait(3)
+                continue
+            end
+
             local char = LocalPlayer.Character
             if not char then task.wait(1); continue end
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then task.wait(1); continue end
 
             local coins = findAllCoins()
-            if #coins == 0 then
-                local inLobby = true
-                for _, obj in ipairs(Workspace:GetDescendants()) do
-                    if obj.Name == "Coin_Server" then inLobby = false; break end
-                end
-                if inLobby then
-                    CollectedCount = 0
-                    CoinCounterLabel.Text = "Coins: 0/40"
-                end
-                task.wait(3)
-                continue
-            end
+            if #coins == 0 then task.wait(3); continue end
 
             local target = coins[1]
             local targetPos = target.Position
