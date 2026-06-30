@@ -226,24 +226,18 @@ local function FetchRoles()
     local remote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
     if remote and remote:IsA("RemoteFunction") then
         local success, data = pcall(function() return remote:InvokeServer() end)
-        if success and data then
-            RolesCache = data
-        end
+        if success and data then RolesCache = data end
     end
 end
 
 local function GetRole(plr)
-    if RolesCache[plr.Name] and RolesCache[plr.Name].Role then
-        return RolesCache[plr.Name].Role
-    end
+    if RolesCache[plr.Name] and RolesCache[plr.Name].Role then return RolesCache[plr.Name].Role end
     local char = plr.Character
     if not char then return "Innocent" end
     local bp = plr:FindFirstChild("Backpack")
-    local function hasTool(container, name)
-        if not container then return false end
-        for _, child in ipairs(container:GetChildren()) do
-            if child:IsA("Tool") and child.Name == name then return true end
-        end
+    local function hasTool(c, n)
+        if not c then return false end
+        for _, x in ipairs(c:GetChildren()) do if x:IsA("Tool") and x.Name == n then return true end end
         return false
     end
     if hasTool(char, "Knife") or hasTool(bp, "Knife") then return "Murderer" end
@@ -255,47 +249,34 @@ local function ApplyESP(plr)
     if not Config.ESPEnabled or plr == LocalPlayer then return end
     local char = plr.Character
     if not char then
-        if PlayerHighlights[plr] then
-            PlayerHighlights[plr]:Destroy()
-            PlayerHighlights[plr] = nil
-        end
+        if PlayerHighlights[plr] then PlayerHighlights[plr]:Destroy(); PlayerHighlights[plr] = nil end
         return
     end
-    local highlight = PlayerHighlights[plr]
-    if not highlight then
-        highlight = Instance.new("Highlight")
-        highlight.Name = "ESP"
-        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        highlight.FillTransparency = 0.5
-        highlight.OutlineTransparency = 0.2
-        PlayerHighlights[plr] = highlight
+    local hl = PlayerHighlights[plr]
+    if not hl then
+        hl = Instance.new("Highlight")
+        hl.Name = "ESP"
+        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        hl.FillTransparency = 0.5
+        hl.OutlineTransparency = 0.2
+        PlayerHighlights[plr] = hl
     end
-    highlight.Adornee = char
-    highlight.Parent = char
+    hl.Adornee = char
+    hl.Parent = char
     local role = GetRole(plr)
-    highlight.FillColor = role == "Murderer" and Color3.fromRGB(255, 0, 0) or
-                         role == "Sheriff" and Color3.fromRGB(0, 0, 255) or
-                         Color3.fromRGB(0, 255, 0)
+    hl.FillColor = role == "Murderer" and Color3.fromRGB(255, 0, 0) or role == "Sheriff" and Color3.fromRGB(0, 0, 255) or Color3.fromRGB(0, 255, 0)
 end
 
 for _, plr in ipairs(Players:GetPlayers()) do
     if plr ~= LocalPlayer then
         plr.CharacterAdded:Connect(function() ApplyESP(plr) end)
-        plr.CharacterRemoving:Connect(function()
-            if PlayerHighlights[plr] then
-                PlayerHighlights[plr].Adornee = nil
-            end
-        end)
+        plr.CharacterRemoving:Connect(function() if PlayerHighlights[plr] then PlayerHighlights[plr].Adornee = nil end end)
         task.spawn(function() ApplyESP(plr) end)
     end
 end
 Players.PlayerAdded:Connect(function(plr)
     plr.CharacterAdded:Connect(function() ApplyESP(plr) end)
-    plr.CharacterRemoving:Connect(function()
-        if PlayerHighlights[plr] then
-            PlayerHighlights[plr].Adornee = nil
-        end
-    end)
+    plr.CharacterRemoving:Connect(function() if PlayerHighlights[plr] then PlayerHighlights[plr].Adornee = nil end end)
 end)
 
 task.spawn(function()
@@ -313,9 +294,7 @@ local MaxRetries = 3
 
 local function getCoinPart(coinServer)
     for _, obj in ipairs(coinServer:GetDescendants()) do
-        if (obj.Name == "MainCoin" or obj.Name == "Coin") and obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") then
-            return obj
-        end
+        if obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") then return obj end
     end
     return nil
 end
@@ -325,10 +304,7 @@ local function scanCoins()
     local container = nil
     for _ = 1, 20 do
         for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "CoinContainer" then
-                container = obj
-                break
-            end
+            if obj.Name == "CoinContainer" then container = obj break end
         end
         if container then break end
         task.wait(0.5)
@@ -336,12 +312,10 @@ local function scanCoins()
     if not container then return coins end
 
     for _, coinServer in ipairs(container:GetChildren()) do
-        if coinServer.Name == "Coin_Server" and coinServer:IsA("Model") then
-            if not Blacklist[coinServer] then
-                local part = getCoinPart(coinServer)
-                if part and part.Position.Y >= 0.5 then
-                    table.insert(coins, {Server = coinServer, Part = part})
-                end
+        if coinServer.Name == "Coin_Server" and coinServer:IsA("Model") and not Blacklist[coinServer] then
+            local part = getCoinPart(coinServer)
+            if part and part.Position.Y >= 0.5 then
+                table.insert(coins, {Server = coinServer, Part = part})
             end
         end
     end
@@ -350,9 +324,7 @@ local function scanCoins()
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if hrp then
         local myPos = hrp.Position
-        table.sort(coins, function(a, b)
-            return (a.Part.Position - myPos).Magnitude < (b.Part.Position - myPos).Magnitude
-        end)
+        table.sort(coins, function(a, b) return (a.Part.Position - myPos).Magnitude < (b.Part.Position - myPos).Magnitude end)
     end
     return coins
 end
@@ -366,10 +338,7 @@ task.spawn(function()
             if not hrp then task.wait(0.5); continue end
 
             local coins = scanCoins()
-            if #coins == 0 then
-                task.wait(2)
-                continue
-            end
+            if #coins == 0 then task.wait(2); continue end
 
             local target = coins[1]
             local coinPart = target.Part
@@ -378,9 +347,7 @@ task.spawn(function()
 
             local targetPos = coinPart.Position
             local safeY = math.max(targetPos.Y, 3)
-            if math.abs(targetPos.Y - myPos.Y) > 10 then
-                safeY = myPos.Y
-            end
+            if math.abs(targetPos.Y - myPos.Y) > 10 then safeY = myPos.Y end
             local destination = Vector3.new(targetPos.X, safeY, targetPos.Z)
 
             local distToTarget = (destination - myPos).Magnitude
@@ -399,25 +366,18 @@ task.spawn(function()
 
             local collected = false
             for attempt = 1, MaxRetries do
-                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then
-                    break
-                end
+                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then break end
                 pcall(function()
                     firetouchinterest(hrp, coinPart, 0)
                     firetouchinterest(hrp, coinPart, 1)
                 end)
                 task.wait(0.3)
-                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then
-                    collected = true
-                    break
-                end
+                if not coinPart.Parent or not coinPart:FindFirstChild("TouchInterest") then collected = true; break end
             end
 
             if not collected then
                 Blacklist[coinServer] = true
-                task.delay(10, function()
-                    Blacklist[coinServer] = nil
-                end)
+                task.delay(10, function() Blacklist[coinServer] = nil end)
             end
 
             task.wait(0.2)
@@ -434,10 +394,7 @@ task.spawn(function()
             if gunDrop and gunDrop:IsA("Model") then
                 local gunPart = nil
                 for _, part in ipairs(gunDrop:GetDescendants()) do
-                    if (part.Name == "Handle" or part.Name == "Gun") and part:IsA("BasePart") and part:FindFirstChild("TouchInterest") then
-                        gunPart = part
-                        break
-                    end
+                    if part:IsA("BasePart") and part:FindFirstChild("TouchInterest") then gunPart = part; break end
                 end
                 if gunPart then
                     local wasWander = Config.WalkWander
@@ -450,10 +407,7 @@ task.spawn(function()
                             local tween = TweenService:Create(hrp, TweenInfo.new((gunPart.Position - hrp.Position).Magnitude / Config.MovementSpeed), {CFrame = CFrame.new(gunPart.Position)})
                             tween:Play()
                             tween.Completed:Wait()
-                            pcall(function()
-                                firetouchinterest(hrp, gunPart, 0)
-                                firetouchinterest(hrp, gunPart, 1)
-                            end)
+                            pcall(function() firetouchinterest(hrp, gunPart, 0); firetouchinterest(hrp, gunPart, 1) end)
                             task.wait(0.3)
                             tween = TweenService:Create(hrp, TweenInfo.new((safePos - hrp.Position).Magnitude / Config.MovementSpeed), {CFrame = CFrame.new(safePos)})
                             tween:Play()
@@ -474,9 +428,7 @@ RunService.Stepped:Connect(function()
     if not char then return end
     if Config.Noclip then
         for _, part in ipairs(char:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
+            if part:IsA("BasePart") then part.CanCollide = false end
         end
     end
 end)
