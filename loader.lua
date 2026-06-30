@@ -2,9 +2,9 @@ local Env = getgenv()
 if not Env.MM2Configuration then
     Env.MM2Configuration = {
         ESPEnabled = true,
-        WalkWander = false,
+        AutoFarm = false,
         AutoGrabGun = false,
-        MovementSpeed = 20,
+        MovementSpeed = 16,
         Noclip = false
     }
 end
@@ -198,11 +198,11 @@ AddSection("Sensors")
 AddToggle("ESP", true, function(v) Config.ESPEnabled = v end)
 AddToggle("Noclip", false, function(v) Config.Noclip = v end)
 AddSection("Actions")
-AddToggle("Walk Wander", false, function(v) Config.WalkWander = v end)
+AddToggle("Auto Farm", false, function(v) Config.AutoFarm = v end)
 AddToggle("Grab Gun", false, function(v) Config.AutoGrabGun = v end)
 AddButton("Reset All", function()
     Config.ESPEnabled = false
-    Config.WalkWander = false
+    Config.AutoFarm = false
     Config.AutoGrabGun = false
     Config.Noclip = false
 end)
@@ -301,7 +301,6 @@ task.spawn(function()
 end)
 
 local Blacklist = {}
-local MaxRetries = 3
 
 local function findAllCollectibles()
     local items = {}
@@ -336,9 +335,9 @@ end
 
 task.spawn(function()
     while IsScriptActive do
-        if Config.WalkWander then
+        if Config.AutoFarm then
             if CollectedCount >= MAX_COINS then
-                Config.WalkWander = false
+                Config.AutoFarm = false
                 CoinCounterLabel.Text = "Coins: " .. CollectedCount .. "/" .. MAX_COINS .. " DONE"
                 task.wait(1)
                 continue
@@ -355,6 +354,7 @@ task.spawn(function()
             local target = items[1]
             local targetPos = target.Position
             local myPos = hrp.Position
+
             local safeY = math.max(targetPos.Y, 3)
             if math.abs(targetPos.Y - myPos.Y) > 10 then safeY = myPos.Y end
             local destination = Vector3.new(targetPos.X, safeY, targetPos.Z)
@@ -362,20 +362,28 @@ task.spawn(function()
             local distToTarget = (destination - myPos).Magnitude
             if distToTarget > 3 then
                 local speed = Config.MovementSpeed
-                local duration = distToTarget / speed
-                local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(destination)})
+                local duration = math.max(distToTarget / speed, 0.3)
+                local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(destination)})
+                tween:Play()
+                tween.Completed:Wait()
+            end
+
+            local finalDist = (targetPos - hrp.Position).Magnitude
+            if finalDist > 2 and finalDist < 20 then
+                local approachPos = targetPos - (targetPos - hrp.Position).Unit * 2.5
+                local tween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(approachPos)})
                 tween:Play()
                 tween.Completed:Wait()
             end
 
             local collected = false
-            for attempt = 1, MaxRetries do
+            for attempt = 1, 3 do
                 if not target.Parent or not target:FindFirstChild("TouchInterest") then break end
                 pcall(function()
                     firetouchinterest(hrp, target, 0)
                     firetouchinterest(hrp, target, 1)
                 end)
-                task.wait(0.3)
+                task.wait(0.4)
                 if not target.Parent or not target:FindFirstChild("TouchInterest") then
                     collected = true
                     CollectedCount = CollectedCount + 1
@@ -386,10 +394,10 @@ task.spawn(function()
 
             if not collected then
                 Blacklist[target] = true
-                task.delay(10, function() Blacklist[target] = nil end)
+                task.delay(8, function() Blacklist[target] = nil end)
             end
 
-            task.wait(0.2)
+            task.wait(0.25)
         else
             task.wait(0.5)
         end
@@ -406,24 +414,28 @@ task.spawn(function()
                     if part:IsA("BasePart") and part:FindFirstChild("TouchInterest") then gunPart = part; break end
                 end
                 if gunPart then
-                    local wasWander = Config.WalkWander
-                    Config.WalkWander = false
+                    local wasFarming = Config.AutoFarm
+                    Config.AutoFarm = false
                     local char = LocalPlayer.Character
                     if char then
                         local hrp = char:FindFirstChild("HumanoidRootPart")
                         if hrp then
                             local safePos = hrp.Position
-                            local tween = TweenService:Create(hrp, TweenInfo.new((gunPart.Position - hrp.Position).Magnitude / Config.MovementSpeed), {CFrame = CFrame.new(gunPart.Position)})
+                            local dist = (gunPart.Position - hrp.Position).Magnitude
+                            local duration = math.max(dist / Config.MovementSpeed, 0.3)
+                            local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(gunPart.Position)})
                             tween:Play()
                             tween.Completed:Wait()
                             pcall(function() firetouchinterest(hrp, gunPart, 0); firetouchinterest(hrp, gunPart, 1) end)
-                            task.wait(0.3)
-                            tween = TweenService:Create(hrp, TweenInfo.new((safePos - hrp.Position).Magnitude / Config.MovementSpeed), {CFrame = CFrame.new(safePos)})
+                            task.wait(0.4)
+                            dist = (safePos - hrp.Position).Magnitude
+                            duration = math.max(dist / Config.MovementSpeed, 0.3)
+                            tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(safePos)})
                             tween:Play()
                             tween.Completed:Wait()
                         end
                     end
-                    if wasWander then Config.WalkWander = true end
+                    if wasFarming then Config.AutoFarm = true end
                 end
             end
         end
