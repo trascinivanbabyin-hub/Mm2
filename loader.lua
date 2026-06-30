@@ -27,8 +27,8 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 260, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -130, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 260, 0, 340)
+MainFrame.Position = UDim2.new(0.5, -130, 0.5, -170)
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -91,7 +91,7 @@ ListLayout.Padding = UDim.new(0, 6)
 ListLayout.Parent = Content
 
 local Minimized = false
-local FullSize = UDim2.new(0, 260, 0, 300)
+local FullSize = UDim2.new(0, 260, 0, 340)
 local MiniSize = UDim2.new(0, 260, 0, 44)
 MinimizeBtn.MouseButton1Click:Connect(function()
     Minimized = not Minimized
@@ -184,6 +184,16 @@ local function AddButton(name, callback)
     Content.CanvasSize = UDim2.new(0, 0, 0, Content.CanvasSize.Y.Offset + 42)
 end
 
+local CoinCounterLabel = Instance.new("TextLabel")
+CoinCounterLabel.Size = UDim2.new(1, 0, 0, 20)
+CoinCounterLabel.BackgroundTransparency = 1
+CoinCounterLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+CoinCounterLabel.TextSize = 12
+CoinCounterLabel.Font = Enum.Font.SourceSansBold
+CoinCounterLabel.Text = "Coins: 0/40"
+CoinCounterLabel.Parent = Content
+Content.CanvasSize = UDim2.new(0, 0, 0, Content.CanvasSize.Y.Offset + 26)
+
 AddSection("Sensors")
 AddToggle("ESP", true, function(v) Config.ESPEnabled = v end)
 AddToggle("Noclip", false, function(v) Config.Noclip = v end)
@@ -220,6 +230,8 @@ end)
 local IsScriptActive = true
 local PlayerHighlights = {}
 local RolesCache = {}
+local CollectedCount = 0
+local MAX_COINS = 40
 
 local function FetchRoles()
     local remote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
@@ -325,6 +337,13 @@ end
 task.spawn(function()
     while IsScriptActive do
         if Config.WalkWander then
+            if CollectedCount >= MAX_COINS then
+                Config.WalkWander = false
+                CoinCounterLabel.Text = "Coins: " .. CollectedCount .. "/" .. MAX_COINS .. " DONE"
+                task.wait(1)
+                continue
+            end
+
             local char = LocalPlayer.Character
             if not char then task.wait(0.5); continue end
             local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -349,11 +368,6 @@ task.spawn(function()
                 tween.Completed:Wait()
             end
 
-            local finalDist = (targetPos - hrp.Position).Magnitude
-            if finalDist > 2 and finalDist < 20 then
-                hrp.CFrame = CFrame.new(targetPos - (targetPos - hrp.Position).Unit * 1.5)
-            end
-
             local collected = false
             for attempt = 1, MaxRetries do
                 if not target.Parent or not target:FindFirstChild("TouchInterest") then break end
@@ -364,6 +378,8 @@ task.spawn(function()
                 task.wait(0.3)
                 if not target.Parent or not target:FindFirstChild("TouchInterest") then
                     collected = true
+                    CollectedCount = CollectedCount + 1
+                    CoinCounterLabel.Text = "Coins: " .. CollectedCount .. "/" .. MAX_COINS
                     break
                 end
             end
