@@ -52,7 +52,6 @@ TitleText.Font = Enum.Font.GothamBold
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = TitleBar
 
--- Minimize button
 local MinimizeBtn = Instance.new("TextButton")
 MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
 MinimizeBtn.Position = UDim2.new(1, -52, 0, 10)
@@ -93,7 +92,6 @@ Layout.Parent = Page
 local Minimized = false
 local FullSize = UDim2.new(0, 260, 0, 360)
 local MiniSize = UDim2.new(0, 260, 0, 40)
-
 MinimizeBtn.MouseButton1Click:Connect(function()
     Minimized = not Minimized
     if Minimized then
