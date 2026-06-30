@@ -198,21 +198,24 @@ AddSection("Sensors")
 AddToggle("ESP", true, function(v) Config.ESPEnabled = v end)
 AddToggle("Noclip", false, function(v) Config.Noclip = v end)
 AddSection("Actions")
-AddToggle("Auto Farm", false, function(v) Config.AutoFarm = v end)
+AddToggle("Auto Farm", false, function(v)
+    Config.AutoFarm = v
+    if not v then CollectedCount = 0; CoinCounterLabel.Text = "Coins: 0/40" end
+end)
 AddToggle("Grab Gun", false, function(v) Config.AutoGrabGun = v end)
 AddButton("Reset All", function()
     Config.ESPEnabled = false
     Config.AutoFarm = false
     Config.AutoGrabGun = false
     Config.Noclip = false
+    CollectedCount = 0
+    CoinCounterLabel.Text = "Coins: 0/40"
 end)
 
 local dragging, dragStart, frameStart = false, nil, nil
 Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        frameStart = MainFrame.Position
+        dragging = true; dragStart = input.Position; frameStart = MainFrame.Position
     end
 end)
 UserInputService.InputChanged:Connect(function(input)
@@ -222,9 +225,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
 end)
 
 local IsScriptActive = true
@@ -302,35 +303,32 @@ end)
 
 local Blacklist = {}
 
-local function findAllCollectibles()
-    local items = {}
+local function isCoin(obj)
+    local current = obj
+    while current do
+        if current.Name == "Coin_Server" then return true end
+        current = current.Parent
+    end
+    return false
+end
+
+local function findAllCoins()
+    local coins = {}
     local myChar = LocalPlayer.Character
-    if not myChar then return items end
+    if not myChar then return coins end
     local hrp = myChar:FindFirstChild("HumanoidRootPart")
-    if not hrp then return items end
+    if not hrp then return coins end
 
     for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") then
-            local isPlayerPart = false
-            local current = obj
-            while current do
-                if current:IsA("Model") and Players:GetPlayerFromCharacter(current) then
-                    isPlayerPart = true
-                    break
-                end
-                current = current.Parent
-            end
-            if not isPlayerPart and not Blacklist[obj] then
-                table.insert(items, obj)
-            end
+        if obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") and isCoin(obj) and not Blacklist[obj] then
+            table.insert(coins, obj)
         end
     end
 
-    table.sort(items, function(a, b)
+    table.sort(coins, function(a, b)
         return (a.Position - hrp.Position).Magnitude < (b.Position - hrp.Position).Magnitude
     end)
-
-    return items
+    return coins
 end
 
 task.spawn(function()
@@ -348,16 +346,25 @@ task.spawn(function()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then task.wait(1); continue end
 
-            local items = findAllCollectibles()
-            if #items == 0 then task.wait(3); continue end
+            local coins = findAllCoins()
+            if #coins == 0 then
+                local inLobby = true
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj.Name == "Coin_Server" then inLobby = false; break end
+                end
+                if inLobby then
+                    CollectedCount = 0
+                    CoinCounterLabel.Text = "Coins: 0/40"
+                end
+                task.wait(3)
+                continue
+            end
 
-            local target = items[1]
+            local target = coins[1]
             local targetPos = target.Position
             local myPos = hrp.Position
 
-            local safeY = math.max(targetPos.Y, 3)
-            if math.abs(targetPos.Y - myPos.Y) > 10 then safeY = myPos.Y end
-            local destination = Vector3.new(targetPos.X, safeY, targetPos.Z)
+            local destination = Vector3.new(targetPos.X, math.max(targetPos.Y, 3), targetPos.Z)
 
             local distToTarget = (destination - myPos).Magnitude
             if distToTarget > 3 then
