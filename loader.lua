@@ -4,7 +4,7 @@ if not Env.MM2Configuration then
         ESPEnabled = true,
         AutoFarm = false,
         AutoGrabGun = false,
-        MovementSpeed = 16,
+        MovementSpeed = 22,
         Noclip = false
     }
 end
@@ -344,12 +344,12 @@ task.spawn(function()
             end
 
             local char = LocalPlayer.Character
-            if not char then task.wait(0.5); continue end
+            if not char then task.wait(1); continue end
             local hrp = char:FindFirstChild("HumanoidRootPart")
-            if not hrp then task.wait(0.5); continue end
+            if not hrp then task.wait(1); continue end
 
             local items = findAllCollectibles()
-            if #items == 0 then task.wait(2); continue end
+            if #items == 0 then task.wait(3); continue end
 
             local target = items[1]
             local targetPos = target.Position
@@ -363,27 +363,30 @@ task.spawn(function()
             if distToTarget > 3 then
                 local speed = Config.MovementSpeed
                 local duration = math.max(distToTarget / speed, 0.3)
-                local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(destination)})
+                local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(destination)})
                 tween:Play()
                 tween.Completed:Wait()
             end
 
             local finalDist = (targetPos - hrp.Position).Magnitude
-            if finalDist > 2 and finalDist < 20 then
-                local approachPos = targetPos - (targetPos - hrp.Position).Unit * 2.5
-                local tween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(approachPos)})
-                tween:Play()
-                tween.Completed:Wait()
+            if finalDist > 2 and finalDist < 25 then
+                local approachPos = targetPos - (targetPos - hrp.Position).Unit * 2.2
+                local approachDist = (approachPos - hrp.Position).Magnitude
+                if approachDist > 0.5 then
+                    local tween = TweenService:Create(hrp, TweenInfo.new(math.max(approachDist / Config.MovementSpeed, 0.15), Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(approachPos)})
+                    tween:Play()
+                    tween.Completed:Wait()
+                end
             end
 
             local collected = false
-            for attempt = 1, 3 do
+            for attempt = 1, 4 do
                 if not target.Parent or not target:FindFirstChild("TouchInterest") then break end
                 pcall(function()
                     firetouchinterest(hrp, target, 0)
                     firetouchinterest(hrp, target, 1)
                 end)
-                task.wait(0.4)
+                task.wait(0.5)
                 if not target.Parent or not target:FindFirstChild("TouchInterest") then
                     collected = true
                     CollectedCount = CollectedCount + 1
@@ -394,10 +397,10 @@ task.spawn(function()
 
             if not collected then
                 Blacklist[target] = true
-                task.delay(8, function() Blacklist[target] = nil end)
+                task.delay(15, function() Blacklist[target] = nil end)
             end
 
-            task.wait(0.25)
+            task.wait(0.3)
         else
             task.wait(0.5)
         end
@@ -423,14 +426,14 @@ task.spawn(function()
                             local safePos = hrp.Position
                             local dist = (gunPart.Position - hrp.Position).Magnitude
                             local duration = math.max(dist / Config.MovementSpeed, 0.3)
-                            local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(gunPart.Position)})
+                            local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(gunPart.Position)})
                             tween:Play()
                             tween.Completed:Wait()
                             pcall(function() firetouchinterest(hrp, gunPart, 0); firetouchinterest(hrp, gunPart, 1) end)
-                            task.wait(0.4)
+                            task.wait(0.5)
                             dist = (safePos - hrp.Position).Magnitude
                             duration = math.max(dist / Config.MovementSpeed, 0.3)
-                            tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(safePos)})
+                            tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(safePos)})
                             tween:Play()
                             tween.Completed:Wait()
                         end
